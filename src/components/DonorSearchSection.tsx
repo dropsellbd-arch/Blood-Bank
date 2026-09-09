@@ -11,7 +11,9 @@ import {
   SlidersHorizontal,
   RotateCcw,
   Sparkles,
-  HeartHandshake
+  HeartHandshake,
+  Users,
+  UserPlus
 } from 'lucide-react';
 import { User, BloodGroup, Language } from '../types';
 import { calculateEligibility } from '../services/storage';
@@ -23,6 +25,7 @@ interface DonorSearchSectionProps {
   initialBloodGroup?: string;
   initialDistrict?: string;
   onContactDonor: (donor: User) => void;
+  onBecomeDonor?: () => void;
 }
 
 export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
@@ -31,6 +34,7 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
   initialBloodGroup = '',
   initialDistrict = '',
   onContactDonor,
+  onBecomeDonor,
 }) => {
   const [bloodGroup, setBloodGroup] = useState<string>(initialBloodGroup);
   const [district, setDistrict] = useState<string>(initialDistrict);
@@ -196,7 +200,29 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
 
         {/* Donors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDonors.length === 0 ? (
+          {donors.length === 0 ? (
+            <div className="col-span-full text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-2xs">
+              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <div className="text-slate-800 font-bold text-base">
+                {currentLang === 'en' ? 'No donors registered yet' : 'এখনো কোনো রক্তদাতা নিবন্ধিত হননি'}
+              </div>
+              <p className="text-slate-500 text-xs mt-1 max-w-md mx-auto">
+                {currentLang === 'en'
+                  ? 'Be the first life-saver to join our voluntary blood donation directory.'
+                  : 'জরুরি মুহূর্তে মুমূর্ষু রোগীর জীবন বাঁচাতে প্রথম রক্তদাতা হিসেবে যুক্ত হোন।'}
+              </p>
+              {onBecomeDonor && (
+                <button
+                  id="search-become-donor-empty-btn"
+                  onClick={onBecomeDonor}
+                  className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-red-200 transition-all"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>{t('becomeDonor', currentLang)}</span>
+                </button>
+              )}
+            </div>
+          ) : filteredDonors.length === 0 ? (
             <div className="col-span-full text-center py-16 bg-white rounded-2xl border border-slate-200">
               <SlidersHorizontal className="w-10 h-10 text-slate-300 mx-auto mb-2" />
               <div className="text-slate-800 font-bold text-base">

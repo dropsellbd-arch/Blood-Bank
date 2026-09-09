@@ -175,10 +175,6 @@ export const translations = {
     iWantTo: 'I want to register as:',
     roleDonor: 'Blood Donor (Can also request)',
     roleRecipient: 'Blood Requester / Recipient',
-    quickDemoLogin: 'Quick Demo Sign-In:',
-    demoDonor: 'Donor: Tanvir (O+)',
-    demoRequester: 'Requester: Nusrat',
-    demoAdmin: 'System Admin',
     sendResetLink: 'Send Password Reset Link',
     backToLogin: 'Back to Sign In',
 
@@ -340,10 +336,6 @@ export const translations = {
     iWantTo: 'আমি নিবন্ধন করতে চাই:',
     roleDonor: 'রক্তদাতা হিসেবে (প্রয়োজনে আবেদনও করতে পারবেন)',
     roleRecipient: 'রক্তের আবেদনকারী হিসেবে',
-    quickDemoLogin: 'টেস্ট লগইন করুন:',
-    demoDonor: 'রক্তদাতা: তানভীর (O+)',
-    demoRequester: 'আবেদনকারী: নুসরাত',
-    demoAdmin: 'অ্যাডমিন একাউন্ট',
     sendResetLink: 'পাসওয়ার্ড রিসেট লিংক পাঠান',
     backToLogin: 'লগইনে ফিরে যান',
 

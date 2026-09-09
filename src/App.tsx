@@ -169,6 +169,7 @@ export default function App() {
               currentUser={currentUser}
               onRespond={handleRespondToRequest}
               onOpenAuth={() => handleOpenAuth('login')}
+              onOpenPostRequest={() => setIsPostRequestModalOpen(true)}
             />
 
             {/* Featured Donors Quick Section */}
@@ -193,47 +194,66 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {allUsers
-                    .filter((u) => u.role === 'donor' && u.isAvailable)
-                    .slice(0, 4)
-                    .map((donor) => (
-                      <div
-                        key={donor.id}
-                        className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all flex items-center gap-3.5"
-                      >
-                        {donor.photoUrl ? (
-                          <img
-                            src={donor.photoUrl}
-                            alt={donor.name}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-rose-100"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-rose-100 text-red-700 font-extrabold flex items-center justify-center text-sm shrink-0">
-                            {donor.name[0]}
-                          </div>
-                        )}
-
-                        <div className="flex-1 truncate">
-                          <div className="font-bold text-xs text-slate-900 truncate">{donor.name}</div>
-                          <div className="text-[11px] text-slate-500 truncate">{donor.upazila ? `${donor.upazila}, ` : ''}{donor.district}</div>
-                          <div className="mt-1 flex items-center gap-2">
-                            <span className="bg-red-600 text-white font-black text-[10px] px-1.5 py-0.2 rounded-sm">
-                              {donor.bloodGroup}
-                            </span>
-                            <span className="text-[10px] text-emerald-600 font-bold">Available</span>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => setContactDonorTarget(donor)}
-                          className="bg-slate-900 hover:bg-red-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+                {allUsers.filter((u) => (u.role === 'donor' || u.role === 'admin') && u.isAvailable).length === 0 ? (
+                  <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center max-w-xl mx-auto shadow-2xs">
+                    <p className="text-xs sm:text-sm text-slate-600 font-medium">
+                      {currentLang === 'en'
+                        ? 'No voluntary donors registered yet. Join our nationwide network and save lives.'
+                        : 'এখনো কোনো স্বেচ্ছাসেবী রক্তদাতা নিবন্ধিত হননি। জীবন বাঁচাতে আজই যুক্ত হোন।'}
+                    </p>
+                    <button
+                      onClick={() => {
+                        if (!currentUser) handleOpenAuth('signup');
+                        else setIsProfileModalOpen(true);
+                      }}
+                      className="mt-4 inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs transition-colors"
+                    >
+                      {t('becomeDonor', currentLang)}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {allUsers
+                      .filter((u) => (u.role === 'donor' || u.role === 'admin') && u.isAvailable)
+                      .slice(0, 4)
+                      .map((donor) => (
+                        <div
+                          key={donor.id}
+                          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:shadow-md transition-all flex items-center gap-3.5"
                         >
-                          {currentLang === 'en' ? 'Call' : 'যোগাযোগ'}
-                        </button>
-                      </div>
-                    ))}
-                </div>
+                          {donor.photoUrl ? (
+                            <img
+                              src={donor.photoUrl}
+                              alt={donor.name}
+                              className="w-12 h-12 rounded-full object-cover ring-2 ring-rose-100"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-rose-100 text-red-700 font-extrabold flex items-center justify-center text-sm shrink-0">
+                              {donor.name[0]}
+                            </div>
+                          )}
+
+                          <div className="flex-1 truncate">
+                            <div className="font-bold text-xs text-slate-900 truncate">{donor.name}</div>
+                            <div className="text-[11px] text-slate-500 truncate">{donor.upazila ? `${donor.upazila}, ` : ''}{donor.district}</div>
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className="bg-red-600 text-white font-black text-[10px] px-1.5 py-0.2 rounded-sm">
+                                {donor.bloodGroup}
+                              </span>
+                              <span className="text-[10px] text-emerald-600 font-bold">Available</span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => setContactDonorTarget(donor)}
+                            className="bg-slate-900 hover:bg-red-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+                          >
+                            {currentLang === 'en' ? 'Call' : 'যোগাযোগ'}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             </section>
           </div>
@@ -247,6 +267,10 @@ export default function App() {
             initialBloodGroup={searchBloodGroup}
             initialDistrict={searchDistrict}
             onContactDonor={(donor) => setContactDonorTarget(donor)}
+            onBecomeDonor={() => {
+              if (!currentUser) handleOpenAuth('signup');
+              else setIsProfileModalOpen(true);
+            }}
           />
         )}
 
@@ -259,6 +283,7 @@ export default function App() {
               currentUser={currentUser}
               onRespond={handleRespondToRequest}
               onOpenAuth={() => handleOpenAuth('login')}
+              onOpenPostRequest={() => setIsPostRequestModalOpen(true)}
             />
           </div>
         )}

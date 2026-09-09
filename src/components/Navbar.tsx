@@ -14,7 +14,8 @@ import {
   CheckCircle2, 
   Clock, 
   Flame,
-  UserCheck
+  UserCheck,
+  LogIn
 } from 'lucide-react';
 import { User, Language } from '../types';
 import { RedLinkStorage } from '../services/storage';
@@ -46,22 +47,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [demoSwitcherOpen, setDemoSwitcherOpen] = useState(false);
 
   const notifications = currentUser ? RedLinkStorage.getNotifications(currentUser.id) : [];
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const allUsers = RedLinkStorage.getUsers();
 
   const handleLogout = () => {
     RedLinkStorage.logout();
     onUserSwitch(null);
     setUserDropdownOpen(false);
-  };
-
-  const handleDemoSwitch = (user: User) => {
-    RedLinkStorage.setCurrentUser(user);
-    onUserSwitch(user);
-    setDemoSwitcherOpen(false);
   };
 
   const handleNotificationClick = (notifId: string, requestId?: string) => {
@@ -74,7 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-rose-100 shadow-xs">
-      {/* Top Banner: Emergency Hotline & Quick Persona Switcher */}
+      {/* Top Banner: Emergency Hotline & Language Switcher */}
       <div className="bg-gradient-to-r from-rose-950 via-red-900 to-rose-950 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-3">
@@ -90,71 +83,24 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
 
-          {/* Quick Demo Role Switcher */}
-          <div className="flex items-center gap-2">
-            <span className="text-rose-300 text-[11px] hidden sm:inline">Demo Switch:</span>
-            <div className="relative">
+          {/* Top Actions: Language Switcher & Quick Auth Link */}
+          <div className="flex items-center gap-3">
+            {!currentUser && (
               <button
-                id="demo-switcher-btn"
-                onClick={() => setDemoSwitcherOpen(!demoSwitcherOpen)}
-                className="bg-rose-800/80 hover:bg-rose-700 px-2.5 py-0.5 rounded-full text-xs font-medium text-rose-100 flex items-center gap-1.5 transition-colors border border-rose-700/60"
-                title="Switch active user role for testing"
+                id="top-signin-btn"
+                onClick={() => onOpenAuth('login')}
+                className="text-rose-200 hover:text-white text-xs font-semibold flex items-center gap-1 transition-colors"
               >
-                <UserCheck className="w-3 h-3 text-red-300" />
-                <span>
-                  {currentUser 
-                    ? `${currentUser.name.split(' ')[0]} (${currentUser.role.toUpperCase()}${currentUser.bloodGroup ? ` • ${currentUser.bloodGroup}` : ''})`
-                    : 'Guest (Sign In)'}
-                </span>
-                <span className="text-[10px] text-rose-300">▼</span>
+                <LogIn className="w-3.5 h-3.5 text-rose-300" />
+                <span>{t('signIn', currentLang)}</span>
               </button>
-
-              {demoSwitcherOpen && (
-                <div 
-                  className="absolute right-0 mt-1 w-64 bg-white text-slate-800 rounded-xl shadow-xl border border-slate-100 py-2 z-50 text-xs animate-in fade-in slide-in-from-top-2"
-                >
-                  <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                    Switch Test Account
-                  </div>
-                  {allUsers.slice(0, 4).map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => handleDemoSwitch(u)}
-                      className={`w-full text-left px-3 py-2 flex items-center gap-2.5 hover:bg-rose-50 transition-colors ${currentUser?.id === u.id ? 'bg-rose-50/70 font-semibold text-rose-700' : ''}`}
-                    >
-                      <div className="w-7 h-7 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs">
-                        {u.bloodGroup || u.name[0]}
-                      </div>
-                      <div className="flex-1 truncate">
-                        <div className="truncate text-slate-900 font-medium">{u.name}</div>
-                        <div className="text-[11px] text-slate-500 capitalize">
-                          {u.role} • {u.district} {u.bloodGroup ? `• ${u.bloodGroup}` : ''}
-                        </div>
-                      </div>
-                      {currentUser?.id === u.id && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />}
-                    </button>
-                  ))}
-                  <div className="border-t border-slate-100 mt-1 pt-1 px-3">
-                    <button
-                      onClick={() => {
-                        RedLinkStorage.logout();
-                        onUserSwitch(null);
-                        setDemoSwitcherOpen(false);
-                      }}
-                      className="w-full text-left py-1 text-rose-600 hover:text-rose-700 font-medium"
-                    >
-                      Log out to Guest
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
 
             {/* Language Switcher */}
             <button
               id="lang-toggle-btn"
               onClick={() => onLanguageChange(currentLang === 'en' ? 'bn' : 'en')}
-              className="bg-rose-900/60 hover:bg-rose-800 text-rose-100 px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-colors border border-rose-700/50"
+              className="bg-rose-900/60 hover:bg-rose-800 text-rose-100 px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-colors border border-rose-700/50"
               aria-label="Toggle language"
             >
               <Globe className="w-3 h-3 text-red-300" />

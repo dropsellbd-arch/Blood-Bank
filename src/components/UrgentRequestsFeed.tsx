@@ -21,6 +21,7 @@ interface UrgentRequestsFeedProps {
   currentUser: User | null;
   onRespond: (requestId: string) => void;
   onOpenAuth: () => void;
+  onOpenPostRequest?: () => void;
   onSelectRequestDetails?: (request: BloodRequest) => void;
 }
 
@@ -30,6 +31,7 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
   currentUser,
   onRespond,
   onOpenAuth,
+  onOpenPostRequest,
   onSelectRequestDetails,
 }) => {
   const [filterUrgency, setFilterUrgency] = useState<string>('all');
@@ -145,7 +147,29 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
 
         {/* Requests Feed Cards */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRequests.length === 0 ? (
+          {requests.length === 0 ? (
+            <div className="col-span-full text-center py-16 bg-white rounded-2xl border border-slate-200">
+              <Droplet className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <div className="text-slate-800 font-bold text-base">
+                {currentLang === 'en' ? 'No active blood requests currently' : 'বর্তমানে রক্তের কোনো জরুরি আবেদন নেই'}
+              </div>
+              <p className="text-slate-500 text-xs mt-1 max-w-md mx-auto">
+                {currentLang === 'en'
+                  ? 'If you or someone you know requires blood urgently at any hospital, post a request now.'
+                  : 'আপনার বা পরিচিত কারো জরুরি রক্তের প্রয়োজন হলে আবেদন তৈরি করুন, নিকটস্থ রক্তদাতারা সাড়া দিতে পারবেন।'}
+              </p>
+              {onOpenPostRequest && (
+                <button
+                  id="feed-post-empty-btn"
+                  onClick={onOpenPostRequest}
+                  className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-red-200 transition-all"
+                >
+                  <Flame className="w-4 h-4" />
+                  <span>{t('postRequest', currentLang)}</span>
+                </button>
+              )}
+            </div>
+          ) : filteredRequests.length === 0 ? (
             <div className="col-span-full text-center py-16 bg-slate-50 rounded-2xl border border-slate-100">
               <Droplet className="w-10 h-10 text-slate-300 mx-auto mb-2" />
               <div className="text-slate-700 font-bold text-base">

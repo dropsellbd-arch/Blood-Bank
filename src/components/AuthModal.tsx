@@ -104,14 +104,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }, 2000);
   };
 
-  const handleDemoLogin = (email: string) => {
-    const res = RedLinkStorage.login(email);
-    if (res.success && res.user) {
-      onLoginSuccess(res.user);
-      onClose();
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in">
       <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-rose-100 overflow-hidden my-6">
@@ -216,41 +208,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <LogIn className="w-4 h-4" />
                 <span>{t('signIn', currentLang)}</span>
               </button>
-
-              {/* Quick 1-Click Demo Logins */}
-              <div className="pt-4 border-t border-slate-100">
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center mb-2">
-                  {t('quickDemoLogin', currentLang)}
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 text-center">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('donor@redlink.org')}
-                    className="bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200/60 p-2 rounded-xl text-[11px] font-bold transition-colors"
-                  >
-                    <div className="text-red-600 font-extrabold">O+ Donor</div>
-                    <div className="text-[10px] text-slate-500">Tanvir</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('requester@redlink.org')}
-                    className="bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 p-2 rounded-xl text-[11px] font-bold transition-colors"
-                  >
-                    <div className="text-slate-800 font-extrabold">Requester</div>
-                    <div className="text-[10px] text-slate-500">Nusrat</div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin('admin@redlink.org')}
-                    className="bg-slate-900 hover:bg-slate-800 text-white p-2 rounded-xl text-[11px] font-bold transition-colors"
-                  >
-                    <div className="text-rose-300 font-extrabold">Admin</div>
-                    <div className="text-[10px] text-slate-300">System</div>
-                  </button>
-                </div>
-              </div>
             </form>
           )}
 
