@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { BloodGroup, UrgencyLevel, BloodRequest, Language, User } from '../types';
 import { RedLinkStorage } from '../services/storage';
-import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, t } from '../i18n';
+import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, getUpazilasForDistrict, formatLocation, t } from '../i18n';
 
 interface PostRequestModalProps {
   isOpen: boolean;
@@ -41,6 +41,7 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
   const [hospitalName, setHospitalName] = useState('');
   const [hospitalAddress, setHospitalAddress] = useState('');
   const [district, setDistrict] = useState<string>('Dhaka');
+  const [upazila, setUpazila] = useState<string>('');
   const [city, setCity] = useState('');
   const [urgency, setUrgency] = useState<UrgencyLevel>('urgent');
   const [neededBy, setNeededBy] = useState('');
@@ -48,6 +49,13 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
   const [contactPhone, setContactPhone] = useState(currentUser?.phone || '');
   const [description, setDescription] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const upazilas = getUpazilasForDistrict(district);
+
+  const handleDistrictChange = (d: string) => {
+    setDistrict(d);
+    setUpazila('');
+  };
   
   // Post-submission matching donors modal view
   const [createdRequest, setCreatedRequest] = useState<BloodRequest | null>(null);
@@ -85,7 +93,8 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
       hospitalName,
       hospitalAddress: hospitalAddress || hospitalName,
       district,
-      city: city || district,
+      upazila: upazila || undefined,
+      city: upazila || city || district,
       neededBy: neededBy || (urgency === 'critical' ? 'Immediately within 2-4 hours' : 'Within 24 hours'),
       urgency,
       contactName: contactName || requesterName,
@@ -94,8 +103,8 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
       status: 'open',
     });
 
-    // Auto-suggest matching donors
-    const matched = RedLinkStorage.getMatchingDonors(bloodGroup, district);
+    // Auto-suggest matching donors (prioritizing same upazila)
+    const matched = RedLinkStorage.getMatchingDonors(bloodGroup, district, upazila);
     setMatchingDonors(matched);
     setCreatedRequest(newReq);
     onRequestCreated(newReq);
@@ -161,7 +170,7 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
                     </h4>
                   </div>
                   <span className="text-xs font-semibold text-rose-600">
-                    {createdRequest.bloodGroup} • {createdRequest.district}
+                    {createdRequest.bloodGroup} • {formatLocation(createdRequest.district, createdRequest.upazila, currentLang)}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mb-3">
@@ -193,7 +202,7 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
                               )}
                             </div>
                             <div className="text-[11px] text-slate-500">
-                              {donor.upazila ? `${donor.upazila}, ` : ''}{donor.district} • {donor.totalDonations} donations
+                              {formatLocation(donor.district, donor.upazila, currentLang)} • {donor.totalDonations} donations
                             </div>
                           </div>
                         </div>
@@ -327,34 +336,53 @@ export const PostRequestModal: React.FC<PostRequestModalProps> = ({
                 </div>
               </div>
 
-              {/* Hospital Name & District */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {t('hospitalName', currentLang)} *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={hospitalName}
-                    onChange={(e) => setHospitalName(e.target.value)}
-                    placeholder={currentLang === 'en' ? 'e.g. Dhaka Medical College Hospital' : 'যেমনঃ ঢাকা মেডিকেল কলেজ হাসপাতাল'}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                  />
-                </div>
+              {/* Hospital Name */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  {t('hospitalName', currentLang)} *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={hospitalName}
+                  onChange={(e) => setHospitalName(e.target.value)}
+                  placeholder={currentLang === 'en' ? 'e.g. Dhaka Medical College Hospital' : 'যেমনঃ ঢাকা মেডিকেল কলেজ হাসপাতাল'}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                />
+              </div>
 
+              {/* District & Upazila */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     {t('district', currentLang)} *
                   </label>
                   <select
                     value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
+                    onChange={(e) => handleDistrictChange(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
                   >
                     {BANGLADESH_DISTRICTS.map((d) => (
                       <option key={d.en} value={d.en}>
                         {currentLang === 'en' ? d.en : d.bn} ({d.en})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {t('upazila', currentLang)}
+                  </label>
+                  <select
+                    value={upazila}
+                    onChange={(e) => setUpazila(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                  >
+                    <option value="">{t('selectUpazila', currentLang)}</option>
+                    {upazilas.map((u) => (
+                      <option key={u.en} value={u.en}>
+                        {currentLang === 'en' ? u.en : u.bn}
                       </option>
                     ))}
                   </select>

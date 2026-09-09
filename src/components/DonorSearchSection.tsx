@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   MapPin, 
@@ -17,13 +17,14 @@ import {
 } from 'lucide-react';
 import { User, BloodGroup, Language } from '../types';
 import { calculateEligibility } from '../services/storage';
-import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, t } from '../i18n';
+import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, getUpazilasForDistrict, formatLocation, t } from '../i18n';
 
 interface DonorSearchSectionProps {
   donors: User[];
   currentLang: Language;
   initialBloodGroup?: string;
   initialDistrict?: string;
+  initialUpazila?: string;
   onContactDonor: (donor: User) => void;
   onBecomeDonor?: () => void;
 }
@@ -33,18 +34,41 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
   currentLang,
   initialBloodGroup = '',
   initialDistrict = '',
+  initialUpazila = '',
   onContactDonor,
   onBecomeDonor,
 }) => {
   const [bloodGroup, setBloodGroup] = useState<string>(initialBloodGroup);
   const [district, setDistrict] = useState<string>(initialDistrict);
+  const [upazila, setUpazila] = useState<string>(initialUpazila);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [availableOnly, setAvailableOnly] = useState<boolean>(false);
   const [eligibleOnly, setEligibleOnly] = useState<boolean>(false);
 
+  // Sync with prop changes if passed from Hero or navbar
+  useEffect(() => {
+    if (initialBloodGroup !== undefined) setBloodGroup(initialBloodGroup);
+  }, [initialBloodGroup]);
+
+  useEffect(() => {
+    if (initialDistrict !== undefined) setDistrict(initialDistrict);
+  }, [initialDistrict]);
+
+  useEffect(() => {
+    if (initialUpazila !== undefined) setUpazila(initialUpazila);
+  }, [initialUpazila]);
+
+  const upazilas = getUpazilasForDistrict(district);
+
+  const handleDistrictChange = (d: string) => {
+    setDistrict(d);
+    setUpazila('');
+  };
+
   const resetFilters = () => {
     setBloodGroup('');
     setDistrict('');
+    setUpazila('');
     setSearchQuery('');
     setAvailableOnly(false);
     setEligibleOnly(false);
@@ -60,6 +84,12 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
 
     // District filter
     if (district && donor.district.toLowerCase() !== district.toLowerCase()) return false;
+
+    // Upazila filter
+    if (upazila) {
+      const donorUpazila = donor.upazila ? donor.upazila.toLowerCase() : '';
+      if (donorUpazila !== upazila.toLowerCase()) return false;
+    }
 
     // Availability filter
     if (availableOnly && !donor.isAvailable) return false;
@@ -100,7 +130,7 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
 
         {/* Filter Controls Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {/* Free text search */}
             <div className="relative">
               <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
@@ -144,13 +174,35 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
               </label>
               <select
                 value={district}
-                onChange={(e) => setDistrict(e.target.value)}
+                onChange={(e) => handleDistrictChange(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               >
                 <option value="">{t('allDistricts', currentLang)}</option>
                 {BANGLADESH_DISTRICTS.map((d) => (
                   <option key={d.en} value={d.en}>
                     {currentLang === 'en' ? d.en : d.bn}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Upazila selector */}
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                {t('upazila', currentLang)}
+              </label>
+              <select
+                value={upazila}
+                onChange={(e) => setUpazila(e.target.value)}
+                disabled={!district}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <option value="">
+                  {district ? t('allUpazilas', currentLang) : t('selectDistrictFirst', currentLang)}
+                </option>
+                {upazilas.map((u) => (
+                  <option key={u.en} value={u.en}>
+                    {currentLang === 'en' ? u.en : u.bn}
                   </option>
                 ))}
               </select>
@@ -186,7 +238,7 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
               <strong className="text-slate-900 font-bold">{filteredDonors.length}</strong> {t('matchingDonorsFound', currentLang)}
             </div>
 
-            {(bloodGroup || district || searchQuery || availableOnly || eligibleOnly) && (
+            {(bloodGroup || district || upazila || searchQuery || availableOnly || eligibleOnly) && (
               <button
                 onClick={resetFilters}
                 className="text-red-600 hover:text-red-700 font-bold flex items-center gap-1 hover:underline"
@@ -278,7 +330,7 @@ export const DonorSearchSection: React.FC<DonorSearchSectionProps> = ({
                           </h3>
                           <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                             <MapPin className="w-3 h-3 text-red-500" />
-                            <span>{donor.upazila ? `${donor.upazila}, ` : ''}{donor.district}</span>
+                            <span>{formatLocation(donor.district, donor.upazila, currentLang)}</span>
                           </div>
                           <div className="text-[11px] text-slate-400 mt-0.5">
                             {donor.age ? `${donor.age} yrs • ` : ''}{donor.gender}

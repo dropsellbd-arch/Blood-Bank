@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { User, Language } from '../types';
 import { calculateEligibility, RedLinkStorage } from '../services/storage';
-import { t } from '../i18n';
+import { formatLocation, t } from '../i18n';
 
 interface ContactDonorModalProps {
   donor: User | null;
@@ -97,7 +97,7 @@ export const ContactDonorModal: React.FC<ContactDonorModalProps> = ({
               </div>
               <div className="text-xs text-slate-300 flex items-center gap-1 mt-0.5">
                 <MapPin className="w-3.5 h-3.5 text-red-400" />
-                <span>{donor.upazila ? `${donor.upazila}, ` : ''}{donor.district}</span>
+                <span>{formatLocation(donor.district, donor.upazila, currentLang)}</span>
               </div>
             </div>
           </div>

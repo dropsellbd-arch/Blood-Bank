@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { UserRole, BloodGroup, Language, User } from '../types';
 import { RedLinkStorage } from '../services/storage';
-import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, t } from '../i18n';
+import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, getUpazilasForDistrict, t } from '../i18n';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -46,6 +46,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [signupRole, setSignupRole] = useState<UserRole>('donor');
   const [signupBloodGroup, setSignupBloodGroup] = useState<BloodGroup>('O+');
   const [signupDistrict, setSignupDistrict] = useState<string>('Dhaka');
+  const [signupUpazila, setSignupUpazila] = useState<string>('');
+
+  const signupUpazilas = getUpazilasForDistrict(signupDistrict);
+
+  const handleSignupDistrictChange = (d: string) => {
+    setSignupDistrict(d);
+    setSignupUpazila('');
+  };
 
   // Reset fields
   const [resetEmail, setResetEmail] = useState('');
@@ -85,8 +93,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       role: signupRole,
       bloodGroup: signupBloodGroup,
       district: signupDistrict,
-      city: signupDistrict,
-      address: signupDistrict,
+      upazila: signupUpazila || undefined,
+      city: signupUpazila || signupDistrict,
+      address: signupUpazila ? `${signupUpazila}, ${signupDistrict}` : signupDistrict,
       isAvailable: true,
     });
 
@@ -302,14 +311,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <label className="block text-xs font-bold text-slate-700 mb-1">{t('district', currentLang)} *</label>
                   <select
                     value={signupDistrict}
-                    onChange={(e) => setSignupDistrict(e.target.value)}
+                    onChange={(e) => handleSignupDistrictChange(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500"
                   >
                     {BANGLADESH_DISTRICTS.map((d) => (
-                      <option key={d.en} value={d.en}>{d.en}</option>
+                      <option key={d.en} value={d.en}>
+                        {currentLang === 'en' ? d.en : d.bn}
+                      </option>
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('upazila', currentLang)}</label>
+                <select
+                  value={signupUpazila}
+                  onChange={(e) => setSignupUpazila(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <option value="">{t('selectUpazila', currentLang)}</option>
+                  {signupUpazilas.map((u) => (
+                    <option key={u.en} value={u.en}>
+                      {currentLang === 'en' ? u.en : u.bn}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

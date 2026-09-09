@@ -1,29 +1,11 @@
 import { Language, BloodGroup, UrgencyLevel, RequestStatus } from './types';
-
-export const BANGLADESH_DISTRICTS: { en: string; bn: string }[] = [
-  { en: 'Dhaka', bn: 'ঢাকা' },
-  { en: 'Chattogram', bn: 'চট্টগ্রাম' },
-  { en: 'Sylhet', bn: 'সিলেট' },
-  { en: 'Rajshahi', bn: 'রাজশাহী' },
-  { en: 'Khulna', bn: 'খুলনা' },
-  { en: 'Barishal', bn: 'বরিশাল' },
-  { en: 'Rangpur', bn: 'রংপুর' },
-  { en: 'Mymensingh', bn: 'ময়মনসিংহ' },
-  { en: 'Bogura', bn: 'বগুড়া' },
-  { en: 'Cumilla', bn: 'কুমিল্লা' },
-  { en: 'Gazipur', bn: 'গাজীপুর' },
-  { en: 'Narayanganj', bn: 'নারায়ণগঞ্জ' },
-  { en: 'Cox\'s Bazar', bn: 'কক্সবাজার' },
-  { en: 'Dinajpur', bn: 'দিনাজপুর' },
-  { en: 'Jessore', bn: 'যশোর' },
-  { en: 'Pabna', bn: 'পাবনা' },
-  { en: 'Tangail', bn: 'টাঙ্গাইল' },
-  { en: 'Faridpur', bn: 'ফরিদপুর' },
-  { en: 'Brahmanbaria', bn: 'ব্রাহ্মণবাড়িয়া' },
-  { en: 'Kushtia', bn: 'কুষ্টিয়া' },
-  { en: 'Noakhali', bn: 'নোয়াখালী' },
-  { en: 'Feni', bn: 'ফেনী' },
-];
+export {
+  BANGLADESH_LOCATIONS,
+  BANGLADESH_DISTRICTS,
+  getUpazilasForDistrict,
+  formatLocation,
+} from './data/bangladeshData';
+export type { UpazilaItem, DistrictItem } from './data/bangladeshData';
 
 export const BLOOD_GROUPS: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -85,6 +67,12 @@ export const translations = {
     donorSearchSubtitle: 'Search verified donors ready to donate across all districts in Bangladesh.',
     allBloodGroups: 'All Blood Groups',
     allDistricts: 'All Districts',
+    upazila: 'Upazila / Thana',
+    allUpazilas: 'All Upazilas',
+    selectUpazila: 'Select Upazila / Thana',
+    selectDistrictFirst: 'Select district first',
+    searchByUpazila: 'Search by Upazila',
+    filterByUpazila: 'Filter by Upazila',
     availableOnly: 'Available Donors Only',
     eligibleOnly: 'Currently Eligible Only',
     resetFilters: 'Reset Filters',
@@ -246,6 +234,12 @@ export const translations = {
     donorSearchSubtitle: 'বাংলাদেশের যেকোনো জেলায় রক্তদানে প্রস্তুত যাচাইকৃত রক্তদাতাদের তালিকা।',
     allBloodGroups: 'সব রক্তের গ্রুপ',
     allDistricts: 'সব জেলা',
+    upazila: 'উপজেলা / থানা',
+    allUpazilas: 'সকল উপজেলা',
+    selectUpazila: 'উপজেলা নির্বাচন করুন',
+    selectDistrictFirst: 'আগে জেলা নির্বাচন করুন',
+    searchByUpazila: 'উপজেলা অনুযায়ী খুঁজুন',
+    filterByUpazila: 'উপজেলা দিয়ে ফিল্টার করুন',
     availableOnly: 'শুধুমাত্র প্রস্তুত রক্তদাতা',
     eligibleOnly: 'রক্তদানের যোগ্য রক্তদাতা',
     resetFilters: 'ফিল্টার রিসেট',

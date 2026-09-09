@@ -51,6 +51,7 @@ export interface BloodRequest {
   hospitalName: string;
   hospitalAddress: string;
   district: string;
+  upazila?: string;
   city?: string;
   neededBy: string; // Date/Time string
   urgency: UrgencyLevel;

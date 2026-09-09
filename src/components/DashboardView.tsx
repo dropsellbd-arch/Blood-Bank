@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { User, BloodRequest, DonationRecord, Language } from '../types';
 import { calculateEligibility, RedLinkStorage } from '../services/storage';
-import { t } from '../i18n';
+import { formatLocation, t } from '../i18n';
 
 interface DashboardViewProps {
   currentUser: User;
@@ -164,7 +164,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span>•</span>
                 <span>{currentUser.phone}</span>
                 <span>•</span>
-                <span className="font-semibold text-slate-700">{currentUser.district}</span>
+                <span className="font-semibold text-slate-700">{formatLocation(currentUser.district, currentUser.upazila, currentLang)}</span>
               </div>
             </div>
           </div>
@@ -420,7 +420,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </span>
                       </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        {req.hospitalName}, {req.district}
+                        {req.hospitalName}, {formatLocation(req.district, req.upazila, currentLang)}
                       </div>
                       <div className="mt-3 flex items-center justify-between text-xs">
                         <span className={`capitalize font-bold ${req.status === 'fulfilled' ? 'text-emerald-700' : 'text-amber-700'}`}>
@@ -492,7 +492,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </span>
                         </div>
                         <div className="text-xs text-slate-500 mt-1">
-                          {req.hospitalName} • {req.hospitalAddress}, {req.district}
+                          {req.hospitalName} • {req.hospitalAddress}, {formatLocation(req.district, req.upazila, currentLang)}
                         </div>
                       </div>
 
@@ -623,7 +623,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </span>
                         </td>
                         <td className="py-3 font-bold text-red-600">{u.bloodGroup}</td>
-                        <td className="py-3">{u.district}</td>
+                        <td className="py-3">{formatLocation(u.district, u.upazila, currentLang)}</td>
                         <td className="py-3">
                           {u.isBanned ? (
                             <span className="text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-full text-[10px]">
@@ -679,7 +679,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {allRequests.map((r) => (
                       <tr key={r.id} className="text-slate-700">
                         <td className="py-3 font-bold text-slate-900">{r.patientName}</td>
-                        <td className="py-3">{r.hospitalName}, {r.district}</td>
+                        <td className="py-3">{r.hospitalName}, {formatLocation(r.district, r.upazila, currentLang)}</td>
                         <td className="py-3 font-bold text-red-600">{r.bloodGroup} ({r.units}u)</td>
                         <td className="py-3 capitalize">{r.urgency}</td>
                         <td className="py-3">

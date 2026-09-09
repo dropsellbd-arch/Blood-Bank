@@ -182,9 +182,10 @@ export const RedLinkStorage = {
     );
 
     matchingDonors.forEach((donor) => {
+      const locationText = newReq.upazila ? `${newReq.upazila}, ${newReq.district}` : newReq.district;
       this.addNotification({
         userId: donor.id,
-        title: `🚨 Urgent ${newReq.bloodGroup} Blood Needed in ${newReq.district}`,
+        title: `🚨 Urgent ${newReq.bloodGroup} Blood Needed in ${locationText}`,
         message: `${newReq.patientName} urgently needs ${newReq.units} bags of ${newReq.bloodGroup} at ${newReq.hospitalName}.`,
         type: 'urgent_match',
         linkRequestId: newReq.id,
@@ -309,13 +310,23 @@ export const RedLinkStorage = {
   },
 
   // Auto-suggest matching donors for request creation
-  getMatchingDonors(bloodGroup: BloodGroup, district: string): User[] {
+  getMatchingDonors(bloodGroup: BloodGroup, district: string, upazila?: string): User[] {
     const users = this.getUsers();
-    return users.filter((u) => {
-      if (u.role !== 'donor' || u.isBanned) return false;
-      const bloodMatch = u.bloodGroup === bloodGroup;
-      const districtMatch = !district || u.district.toLowerCase() === district.toLowerCase();
-      return bloodMatch && districtMatch;
-    });
+    return users
+      .filter((u) => {
+        if (u.role !== 'donor' || u.isBanned) return false;
+        const bloodMatch = u.bloodGroup === bloodGroup;
+        const districtMatch = !district || u.district.toLowerCase() === district.toLowerCase();
+        return bloodMatch && districtMatch;
+      })
+      .sort((a, b) => {
+        if (upazila) {
+          const aMatch = a.upazila && a.upazila.toLowerCase() === upazila.toLowerCase();
+          const bMatch = b.upazila && b.upazila.toLowerCase() === upazila.toLowerCase();
+          if (aMatch && !bMatch) return -1;
+          if (!aMatch && bMatch) return 1;
+        }
+        return (b.totalDonations || 0) - (a.totalDonations || 0);
+      });
   },
 };

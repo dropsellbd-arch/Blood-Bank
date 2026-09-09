@@ -13,7 +13,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { BloodRequest, Language, User } from '../types';
-import { BANGLADESH_DISTRICTS, t } from '../i18n';
+import { BANGLADESH_DISTRICTS, getUpazilasForDistrict, formatLocation, t } from '../i18n';
 
 interface UrgentRequestsFeedProps {
   requests: BloodRequest[];
@@ -36,7 +36,15 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
 }) => {
   const [filterUrgency, setFilterUrgency] = useState<string>('all');
   const [filterDistrict, setFilterDistrict] = useState<string>('all');
+  const [filterUpazila, setFilterUpazila] = useState<string>('all');
   const [filterBloodGroup, setFilterBloodGroup] = useState<string>('all');
+
+  const upazilas = filterDistrict !== 'all' ? getUpazilasForDistrict(filterDistrict) : [];
+
+  const handleDistrictChange = (dist: string) => {
+    setFilterDistrict(dist);
+    setFilterUpazila('all');
+  };
 
   // Filter and sort requests (newest first)
   const filteredRequests = requests
@@ -47,6 +55,10 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
       if (filterUrgency !== 'fulfilled' && req.status === 'fulfilled' && filterUrgency !== 'all') return false;
 
       if (filterDistrict !== 'all' && req.district.toLowerCase() !== filterDistrict.toLowerCase()) return false;
+      if (filterUpazila !== 'all') {
+        const reqUpazila = req.upazila ? req.upazila.toLowerCase() : '';
+        if (reqUpazila !== filterUpazila.toLowerCase()) return false;
+      }
       if (filterBloodGroup !== 'all' && req.bloodGroup !== filterBloodGroup) return false;
 
       return true;
@@ -132,7 +144,7 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
 
             <select
               value={filterDistrict}
-              onChange={(e) => setFilterDistrict(e.target.value)}
+              onChange={(e) => handleDistrictChange(e.target.value)}
               className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-red-500 min-h-[42px]"
             >
               <option value="all">{t('allDistricts', currentLang)}</option>
@@ -142,6 +154,21 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
                 </option>
               ))}
             </select>
+
+            {filterDistrict !== 'all' && upazilas.length > 0 && (
+              <select
+                value={filterUpazila}
+                onChange={(e) => setFilterUpazila(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-red-500 min-h-[42px]"
+              >
+                <option value="all">{t('allUpazilas', currentLang)}</option>
+                {upazilas.map((u) => (
+                  <option key={u.en} value={u.en}>
+                    {currentLang === 'en' ? u.en : u.bn}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -229,7 +256,7 @@ export const UrgentRequestsFeed: React.FC<UrgentRequestsFeedProps> = ({
 
                         <div className="flex items-start gap-2">
                           <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                          <span className="truncate">{req.hospitalAddress}, <strong className="text-slate-700">{req.district}</strong></span>
+                          <span className="truncate">{req.hospitalAddress}, <strong className="text-slate-700">{formatLocation(req.district, req.upazila, currentLang)}</strong></span>
                         </div>
 
                         <div className="flex items-center gap-2 text-rose-700 font-semibold bg-rose-50/70 px-2.5 py-1 rounded-lg">

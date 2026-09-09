@@ -12,7 +12,7 @@ import {
   Droplet
 } from 'lucide-react';
 import { BloodGroup, Language, User } from '../types';
-import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, t } from '../i18n';
+import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, getUpazilasForDistrict, t } from '../i18n';
 
 interface HeroSectionProps {
   currentLang: Language;
@@ -20,7 +20,7 @@ interface HeroSectionProps {
   totalDonors: number;
   requestsFulfilled: number;
   activeRequests: number;
-  onSearch: (bloodGroup: string, district: string) => void;
+  onSearch: (bloodGroup: string, district: string, upazila?: string) => void;
   onOpenPostRequest: () => void;
   onBecomeDonor: () => void;
   onOpenCompatibilityModal: () => void;
@@ -39,10 +39,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const [selectedBloodGroup, setSelectedBloodGroup] = useState<string>('');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
+  const [selectedUpazila, setSelectedUpazila] = useState<string>('');
+
+  const upazilas = getUpazilasForDistrict(selectedDistrict);
+
+  const handleDistrictChange = (dist: string) => {
+    setSelectedDistrict(dist);
+    setSelectedUpazila('');
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(selectedBloodGroup, selectedDistrict);
+    onSearch(selectedBloodGroup, selectedDistrict, selectedUpazila);
   };
 
   return (
@@ -134,7 +142,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* District selector */}
-            <div className="flex-1 min-w-[200px] mb-3 sm:mb-0">
+            <div className="flex-1 min-w-[180px] mb-3 sm:mb-0">
               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-1 flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-rose-600" />
                 {t('district', currentLang)}
@@ -142,13 +150,39 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <select
                 id="hero-district-select"
                 value={selectedDistrict}
-                onChange={(e) => setSelectedDistrict(e.target.value)}
+                onChange={(e) => handleDistrictChange(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-base sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 min-h-[44px]"
               >
                 <option value="">{t('allDistricts', currentLang)}</option>
                 {BANGLADESH_DISTRICTS.map((d) => (
                   <option key={d.en} value={d.en}>
                     {currentLang === 'en' ? d.en : d.bn} ({d.en})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Upazila selector */}
+            <div className="flex-1 min-w-[180px] mb-3 sm:mb-0">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 px-1 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-red-500" />
+                {t('upazila', currentLang)}
+              </label>
+              <select
+                id="hero-upazila-select"
+                value={selectedUpazila}
+                onChange={(e) => setSelectedUpazila(e.target.value)}
+                disabled={!selectedDistrict}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-base sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <option value="">
+                  {selectedDistrict
+                    ? t('allUpazilas', currentLang)
+                    : t('selectDistrictFirst', currentLang)}
+                </option>
+                {upazilas.map((u) => (
+                  <option key={u.en} value={u.en}>
+                    {currentLang === 'en' ? u.en : u.bn}
                   </option>
                 ))}
               </select>

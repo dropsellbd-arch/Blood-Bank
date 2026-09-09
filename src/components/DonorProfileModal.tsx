@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { User, BloodGroup, Language } from '../types';
 import { calculateEligibility, RedLinkStorage } from '../services/storage';
-import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, t } from '../i18n';
+import { BLOOD_GROUPS, BANGLADESH_DISTRICTS, getUpazilasForDistrict, t } from '../i18n';
 
 interface DonorProfileModalProps {
   isOpen: boolean;
@@ -47,6 +47,13 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
   const [medicalNotes, setMedicalNotes] = useState(currentUser.medicalNotes || '');
   const [photoUrl, setPhotoUrl] = useState(currentUser.photoUrl || '');
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const upazilas = getUpazilasForDistrict(district);
+
+  const handleDistrictChange = (d: string) => {
+    setDistrict(d);
+    setUpazila('');
+  };
 
   if (!isOpen) return null;
 
@@ -337,7 +344,7 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
               </label>
               <select
                 value={district}
-                onChange={(e) => setDistrict(e.target.value)}
+                onChange={(e) => handleDistrictChange(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               >
                 {BANGLADESH_DISTRICTS.map((d) => (
@@ -350,15 +357,23 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
-                {t('cityOrArea', currentLang)} (Upazila)
+                {t('upazila', currentLang)}
               </label>
-              <input
-                type="text"
+              <select
                 value={upazila}
                 onChange={(e) => setUpazila(e.target.value)}
-                placeholder={currentLang === 'en' ? 'e.g. Dhanmondi / Mirpur / Sadar' : 'যেমনঃ ধানমন্ডি / মিরপুর / সদর'}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-              />
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+              >
+                <option value="">{t('selectUpazila', currentLang)}</option>
+                {upazilas.map((u) => (
+                  <option key={u.en} value={u.en}>
+                    {currentLang === 'en' ? u.en : u.bn}
+                  </option>
+                ))}
+                {upazila && !upazilas.some((u) => u.en.toLowerCase() === upazila.toLowerCase() || u.bn === upazila) && (
+                  <option value={upazila}>{upazila}</option>
+                )}
+              </select>
             </div>
           </div>
 
