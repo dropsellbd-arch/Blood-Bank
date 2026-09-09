@@ -1,0 +1,8 @@
+{
+  "name": "RedLink - Blood Donation Platform",
+  "description": "A life-saving blood donation platform connecting voluntary donors with patients across Bangladesh with real-time donor matching, urgent requests, eligibility tracking, and bilingual support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
